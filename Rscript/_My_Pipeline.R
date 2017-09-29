@@ -10,7 +10,7 @@ source("./experimentAPI.R")
 # ---- INPUT and CONFIGURATIONS ----
 
 EDGE_TYPE_FILE = "../data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
-INPUT_FILE = "../facts/state_capital.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
+INPUT_FILE = "../facts/state_capital2.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
 CLUSTER_SIZE = 48 # Number of workers in gbserver
 FALSE_PER_TRUE = 5
 DISCARD_REL = 191
@@ -41,22 +41,25 @@ if (ncol(dat.true) < 3)
 # ---- Construct false labeled data -----
 set.seed(233)
 
-# TODO: reformat this so it is universal and file independent
-dat.false <- rbind.fill(apply(dat.true, 1, function(x){
-  candidates <- unique(dat.true[which(dat.true[,1] != x[1]), 2])
-  candidates <- unlist(lapply(candidates, function(y){
-    if(length(which(dat.true[,1] == x[1] & dat.true[,2] == y) != 0)) {
-      return(NULL)
-    }
-    return(y)
-  }))
-  return(data.frame(src=x[1], 
-                    dst=sample(candidates, FALSE_PER_TRUE),
-                    label=F))
-}))
+# # TODO: reformat this so it is universal and file independent
+# dat.false <- rbind.fill(apply(dat.true, 1, function(x){
+#   candidates <- unique(dat.true[which(dat.true[,1] != x[1]), 2])
+#   candidates <- unlist(lapply(candidates, function(y){
+#     if(length(which(dat.true[,1] == x[1] & dat.true[,2] == y) != 0)) {
+#       return(NULL)
+#     }
+#     return(y)
+#   }))
+#   return(data.frame(src=x[1], 
+#                     dst=sample(candidates, FALSE_PER_TRUE),
+#                     label=F))
+# }))
+# 
+# colnames(dat.true) <- c("src","dst","label")
+# dat <- rbind(dat.true, dat.false)
+dat <- dat.true
 
-colnames(dat.true) <- c("src","dst","label")
-dat <- rbind(dat.true, dat.false)
+dat
 
 elapsed.time <- data.frame()
 

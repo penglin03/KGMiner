@@ -4,4 +4,4 @@ cd ./Rscript
 
 mkdir -p ../result/city
 
-Rscript --verbose capital_state.R 
+Rscript --verbose _My_Pipeline.R
