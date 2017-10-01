@@ -39,9 +39,12 @@ colnames(relation.list) <- c("relation", "discard_rel")
 
 relation.list
 
+print(paste("Relation", "Accuracy", "Precision", "Recall", "F1", sep = "\t"))
+
 for (i in 1:nrow(relation.list)) {
   rel.str <- relation.list[i, 1]
   rel.int <- relation.list[i, 2]
+
   train <- paste("../data/groundtruth/", rel.str, "_train.tsv", sep="")
   test <- paste("../data/groundtruth/", rel.str, "_test.tsv", sep="")
 
@@ -63,7 +66,26 @@ for (i in 1:nrow(relation.list)) {
   modeltrain <- Logistic(label~.,featurestrain)
   evaltest <- evaluate_Weka_classifier(modeltrain, newdata=featurestest, cost=NULL, numFolds = 0, complexity = T, class = T, seed = NULL)
 
-  print(evaltest)
+  TP <- evaltest$confusionMatrix["TRUE", "TRUE"]
+  FP <- evaltest$confusionMatrix["FALSE", "TRUE"]
+  TN <- evaltest$confusionMatrix["FALSE", "FALSE"]
+  FN <- evaltest$confusionMatrix["TRUE", "FALSE"]
+  accuracy <- (TP + TN) / (TP + FP + FN + TN)
+  precision <- TP / (TP + FP)
+  if (is.nan(precision)) {
+    precision <- 0
+  }
+  recall <- TP / (TP + FN)
+  if (is.nan(recall)) {
+    recall <- 0
+  }
+  f1 <- 2 * TP / (2 * TP + FP + FN)
+  if (is.nan(f1)) {
+    f1 <- 0
+  }
+  cat(paste(rel.str, round(accuracy, digits=4), round(precision, digits=4), round(recall, digits=4), round(f1, digits=4), "\n", sep = "\t"))
+  ## print(evaltest$confusionMatrix)
+  ## print(evaltest)
 }
 
 # ---- Construct false labeled data -----
