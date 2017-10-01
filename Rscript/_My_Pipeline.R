@@ -60,9 +60,6 @@ for (i in 1:nrow(relation.list)) {
   featurestrain <- featuremerged[1:nrow(datatrain), ]
   featurestest <- featuremerged[(nrow(datatrain) + 1):nrow(featuremerged), ]
 
-  write.csv(featurestrain, "train.csv")
-  write.csv(featurestest, "test.csv")
-
   modeltrain <- Logistic(label~.,featurestrain)
   evaltest <- evaluate_Weka_classifier(modeltrain, newdata=featurestest, cost=NULL, numFolds = 0, complexity = T, class = T, seed = NULL)
 
@@ -84,8 +81,8 @@ for (i in 1:nrow(relation.list)) {
     f1 <- 0
   }
   cat(paste(rel.str, round(accuracy, digits=4), round(precision, digits=4), round(recall, digits=4), round(f1, digits=4), "\n", sep = "\t"))
-  ## print(evaltest$confusionMatrix)
-  ## print(evaltest)
+  write.csv(featurestrain, paste("../result/", rel.str, "_train.csv", sep=""), row.names=FALSE)
+  write.csv(featurestest, paste("../result/", rel.str, "_test.csv", sep=""), row.names=FALSE)
 }
 
 # ---- Construct false labeled data -----
