@@ -11,7 +11,7 @@ source("./_My_ExperimentAPI.R")
 
 EDGE_TYPE_FILE = "../data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
 ## INPUT_FILE = "../facts/state_capital2.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
-CLUSTER_SIZE = 4 # Number of workers in gbserver
+CLUSTER_SIZE = 5 # Number of workers in gbserver
 max_depth = 3
 
 DISCARD_REL = 191
@@ -39,7 +39,7 @@ colnames(relation.list) <- c("relation", "discard_rel")
 
 relation.list
 
-print(paste("Relation", "Accuracy", "Precision", "Recall", "F1", sep = "\t"))
+cat(paste("Relation", "Accuracy", "Precision", "Recall", "F1", sep = "\t"))
 
 for (i in 1:nrow(relation.list)) {
   rel.str <- relation.list[i, 1]
@@ -54,8 +54,9 @@ for (i in 1:nrow(relation.list)) {
   colnames(datatrain) <- c("src","dst","label")
   colnames(datatest) <- c("src","dst","label")
 
-  # or use full paths: extract.fullpaths(datatrain, rel.int)
-  featuremerged <- extract.predicatepaths(rbind(datatrain, datatest))
+  # Either full paths or predicate paths.
+  ## featuremerged <- extract.predicatepaths(rbind(datatrain, datatest), rel.int)
+  featuremerged <- extract.fullpaths(rbind(datatrain, datatest), rel.int)
 
   featurestrain <- featuremerged[1:nrow(datatrain), ]
   featurestest <- featuremerged[(nrow(datatrain) + 1):nrow(featuremerged), ]
