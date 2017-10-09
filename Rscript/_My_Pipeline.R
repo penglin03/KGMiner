@@ -48,8 +48,8 @@ for (i in 1:nrow(relation.list)) {
   train <- paste("../data/groundtruth/", rel.str, "_train.tsv", sep="")
   test <- paste("../data/groundtruth/", rel.str, "_test.tsv", sep="")
 
-  datatrain <- read.csv(train, sep="\t")
-  datatest <- read.csv(test, sep="\t")
+  datatrain <- read.csv(train, head = FALSE, sep="\t")
+  datatest <- read.csv(test, head = FALSE, sep="\t")
 
   colnames(datatrain) <- c("src","dst","label")
   colnames(datatest) <- c("src","dst","label")
