@@ -14,7 +14,7 @@ EDGE_TYPE_FILE = "../data/infobox.edgetypes" # Example : "../data/lobbyist.edget
 CLUSTER_SIZE = 5 # Number of workers in gbserver
 max_depth = 3
 
-DISCARD_REL = 191
+DISCARD_REL = 25
 
 # ---- Load edge type file ----
 
@@ -44,6 +44,10 @@ cat(paste("Relation", "Accuracy", "Precision", "Recall", "F1\n", sep = "\t"))
 for (i in 1:nrow(relation.list)) {
   rel.str <- relation.list[i, 1]
   rel.int <- relation.list[i, 2]
+  
+  # print(rel.int)
+  DISCARD_REL = rel.int
+  clusterExport(cl = cl, varlist=c("DISCARD_REL"), envir = environment())
 
   train <- paste("../data/groundtruth/", rel.str, "_train.tsv", sep="")
   test <- paste("../data/groundtruth/", rel.str, "_test.tsv", sep="")
@@ -56,63 +60,72 @@ for (i in 1:nrow(relation.list)) {
 
   # Either full paths or predicate paths.
   featuremerged <- extract.predicatepaths(rbind(datatrain, datatest), rel.int)
-  ## featuremerged <- extract.fullpaths(rbind(datatrain, datatest), rel.int)
-
-  featurestrain <- featuremerged[1:nrow(datatrain), ]
-  featurestest <- featuremerged[(nrow(datatrain) + 1):nrow(featuremerged), ]
-
-  modeltrain <- Logistic(as.factor(label)~.,featurestrain)
-  # evaltest <- evaluate_Weka_classifier(modeltrain, newdata=featurestest, cost=NULL, numFolds = 0, complexity = T, class = T, seed = NULL)
-  # 
-  # TP <- evaltest$confusionMatrix["TRUE", "TRUE"]
-  # FP <- evaltest$confusionMatrix["FALSE", "TRUE"]
-  # TN <- evaltest$confusionMatrix["FALSE", "FALSE"]
-  # FN <- evaltest$confusionMatrix["TRUE", "FALSE"]
-  # accuracy <- (TP + TN) / (TP + FP + FN + TN)
-  # precision <- TP / (TP + FP)
-  # if (is.nan(precision)) {
-  #   precision <- 0
-  # }
-  # recall <- TP / (TP + FN)
-  # if (is.nan(recall)) {
-  #   recall <- 0
-  # }
-  # f1 <- 2 * TP / (2 * TP + FP + FN)
-  # if (is.nan(f1)) {
-  #   f1 <- 0
-  # }
   
-  predict_test <- predict(modeltrain, newdata = featurestest)
+  if (ncol(featuremerged) == 1) {
+    cat(paste(rel.str, round(0, digits=5), round(0, digits=5), round(0, digits=5), round(0, digits=5), "\n", sep = "\t"))
+  } else {
   
-  actual_true <- which(featurestest$label == TRUE)
-  actual_false <- which(featurestest$label == FALSE)
-  predicted_true <- which(predict_test == TRUE)
-  predicted_false <- which(predict_test == FALSE)
+    ## featuremerged <- extract.fullpaths(rbind(datatrain, datatest), rel.int)
+      
+    featurestrain <- featuremerged[1:nrow(datatrain), ]
+    featurestest <- featuremerged[(nrow(datatrain) + 1):nrow(featuremerged), ]
+    
+    # print(dim(featurestrain))
+    # print(dim(featurestest))
   
-  TP <- length(intersect(actual_true, predicted_true))
-  FP <- length(intersect(actual_false, predicted_true))
-  FN <- length(intersect(actual_true, predicted_false))
-  TN <- length(intersect(actual_false, predicted_false))
-  
-  acc <- (TP + TN) / (TP + FP + FN + TN)
-  prec <- TP / (TP + FP)
-  recl <- TP / (TP + FN)
-  f1 <- 2 * (prec * recl) / (prec + recl)
-  
-  acc <- ifelse(is.nan(acc), 0, acc)
-  prec <- ifelse(is.nan(prec), 0, prec)
-  recl <- ifelse(is.nan(recl), 0, recl)
-  f1 <- ifelse(is.nan(f1), 0, f1)
-  
-  # print(paste(acc, prec, recl, f1))
-  cat(paste(rel.str, round(acc, digits=5), round(prec, digits=5), round(recl, digits=5), round(f1, digits=5), "\n", sep = "\t"))
-  
-  output_df <- data.frame(featurestest$label, predict_test, row.names = NULL)
-  colnames(output_df) <- c("actual", "predict")
-  
-  write.table(output_df, file = paste("../result/", rel.str, "_predicts.tsv", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
-  write.csv(featurestrain, paste("../result/", rel.str, "_train.csv", sep=""), row.names=FALSE)
-  write.csv(featurestest, paste("../result/", rel.str, "_test.csv", sep=""), row.names=FALSE)
+    modeltrain <- Logistic(as.factor(label) ~ .,featurestrain)
+    # evaltest <- evaluate_Weka_classifier(modeltrain, newdata=featurestest, cost=NULL, numFolds = 0, complexity = T, class = T, seed = NULL)
+    # 
+    # TP <- evaltest$confusionMatrix["TRUE", "TRUE"]
+    # FP <- evaltest$confusionMatrix["FALSE", "TRUE"]
+    # TN <- evaltest$confusionMatrix["FALSE", "FALSE"]
+    # FN <- evaltest$confusionMatrix["TRUE", "FALSE"]
+    # accuracy <- (TP + TN) / (TP + FP + FN + TN)
+    # precision <- TP / (TP + FP)
+    # if (is.nan(precision)) {
+    #   precision <- 0
+    # }
+    # recall <- TP / (TP + FN)
+    # if (is.nan(recall)) {
+    #   recall <- 0
+    # }
+    # f1 <- 2 * TP / (2 * TP + FP + FN)
+    # if (is.nan(f1)) {
+    #   f1 <- 0
+    # }
+    
+    predict_test <- predict(modeltrain, newdata = featurestest)
+    
+    actual_true <- which(featurestest$label == TRUE)
+    actual_false <- which(featurestest$label == FALSE)
+    predicted_true <- which(predict_test == TRUE)
+    predicted_false <- which(predict_test == FALSE)
+    
+    TP <- length(intersect(actual_true, predicted_true))
+    FP <- length(intersect(actual_false, predicted_true))
+    FN <- length(intersect(actual_true, predicted_false))
+    TN <- length(intersect(actual_false, predicted_false))
+    
+    acc <- (TP + TN) / (TP + FP + FN + TN)
+    prec <- TP / (TP + FP)
+    recl <- TP / (TP + FN)
+    f1 <- 2 * (prec * recl) / (prec + recl)
+    
+    acc <- ifelse(is.nan(acc), 0, acc)
+    prec <- ifelse(is.nan(prec), 0, prec)
+    recl <- ifelse(is.nan(recl), 0, recl)
+    f1 <- ifelse(is.nan(f1), 0, f1)
+    
+    # print(paste(acc, prec, recl, f1))
+    cat(paste(rel.str, round(acc, digits=5), round(prec, digits=5), round(recl, digits=5), round(f1, digits=5), "\n", sep = "\t"))
+    
+    output_df <- data.frame(featurestest$label, predict_test, row.names = NULL)
+    colnames(output_df) <- c("actual", "predict")
+    
+    write.table(output_df, file = paste("../result/", rel.str, "_predicts.tsv", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
+    write.csv(featurestrain, paste("../result/", rel.str, "_train.csv", sep=""), row.names=FALSE)
+    write.csv(featurestest, paste("../result/", rel.str, "_test.csv", sep=""), row.names=FALSE)
+  }
 }
 
 # ---- Construct false labeled data -----
