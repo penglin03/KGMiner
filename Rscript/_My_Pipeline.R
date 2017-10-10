@@ -11,7 +11,7 @@ source("./_My_ExperimentAPI.R")
 
 EDGE_TYPE_FILE = "../data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
 ## INPUT_FILE = "../facts/state_capital2.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
-CLUSTER_SIZE = 5 # Number of workers in gbserver
+CLUSTER_SIZE = 48 # Number of workers in gbserver
 max_depth = 3
 
 DISCARD_REL = 25
